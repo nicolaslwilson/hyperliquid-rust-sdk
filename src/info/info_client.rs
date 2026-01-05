@@ -35,6 +35,7 @@ pub enum InfoRequest {
     #[serde(rename = "clearinghouseState")]
     UserState {
         user: Address,
+        dex: Option<String>,
     },
     #[serde(rename = "batchClearinghouseStates")]
     UserStates {
@@ -49,12 +50,16 @@ pub enum InfoRequest {
     },
     OpenOrders {
         user: Address,
+        dex: Option<String>,
     },
     OrderStatus {
         user: Address,
         oid: u64,
     },
-    Meta,
+    Meta {
+        dex: Option<String>,
+    },
+    PerpDexs,
     MetaAndAssetCtxs,
     SpotMeta,
     SpotMetaAndAssetCtxs,
@@ -182,13 +187,21 @@ impl InfoClient {
         serde_json::from_str(&return_data).map_err(|e| Error::JsonParse(e.to_string()))
     }
 
-    pub async fn open_orders(&self, address: Address) -> Result<Vec<OpenOrdersResponse>> {
-        let input = InfoRequest::OpenOrders { user: address };
+    pub async fn open_orders(
+        &self,
+        address: Address,
+        dex: Option<String>,
+    ) -> Result<Vec<OpenOrdersResponse>> {
+        let input = InfoRequest::OpenOrders { user: address, dex };
         self.send_info_request(input).await
     }
 
-    pub async fn user_state(&self, address: Address) -> Result<UserStateResponse> {
-        let input = InfoRequest::UserState { user: address };
+    pub async fn user_state(
+        &self,
+        address: Address,
+        dex: Option<String>,
+    ) -> Result<UserStateResponse> {
+        let input = InfoRequest::UserState { user: address, dex };
         self.send_info_request(input).await
     }
 
@@ -207,8 +220,8 @@ impl InfoClient {
         self.send_info_request(input).await
     }
 
-    pub async fn meta(&self) -> Result<Meta> {
-        let input = InfoRequest::Meta;
+    pub async fn meta(&self, dex: Option<String>) -> Result<Meta> {
+        let input = InfoRequest::Meta { dex };
         self.send_info_request(input).await
     }
 
