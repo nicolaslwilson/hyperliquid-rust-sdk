@@ -39,7 +39,7 @@ async fn open_orders_example(info_client: &InfoClient) {
 
     info!(
         "Open order data for {user}: {:?}",
-        info_client.open_orders(user).await.unwrap()
+        info_client.open_orders(user, None).await.unwrap()
     );
 }
 
@@ -48,7 +48,7 @@ async fn user_state_example(info_client: &InfoClient) {
 
     info!(
         "User state data for {user}: {:?}",
-        info_client.user_state(user).await.unwrap()
+        info_client.user_state(user, None).await.unwrap()
     );
 }
 
@@ -89,7 +89,7 @@ async fn recent_trades(info_client: &InfoClient) {
 }
 
 async fn meta_example(info_client: &InfoClient) {
-    info!("Meta: {:?}", info_client.meta().await.unwrap());
+    info!("Meta: {:?}", info_client.meta(None).await.unwrap());
 }
 
 async fn meta_and_asset_contexts_example(info_client: &InfoClient) {

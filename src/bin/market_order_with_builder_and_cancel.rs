@@ -16,9 +16,10 @@ async fn main() {
             .parse()
             .unwrap();
 
-    let exchange_client = ExchangeClient::new(None, wallet, Some(BaseUrl::Testnet), None, None)
-        .await
-        .unwrap();
+    let exchange_client =
+        ExchangeClient::new(None, wallet, Some(BaseUrl::Testnet), None, None, None)
+            .await
+            .unwrap();
 
     // Market open order
     let market_open_params = MarketOrderParams {
@@ -29,6 +30,7 @@ async fn main() {
         slippage: Some(0.01), // 1% slippage
         cloid: None,
         wallet: None,
+        dex: None,
     };
 
     let fee = 1;
@@ -68,6 +70,7 @@ async fn main() {
         slippage: Some(0.01), // 1% slippage
         cloid: None,
         wallet: None,
+        dex: None,
     };
 
     let response = exchange_client

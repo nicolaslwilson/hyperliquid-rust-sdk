@@ -70,11 +70,13 @@ pub struct MarketOrderParams<'a> {
     pub slippage: Option<f64>,
     pub cloid: Option<Uuid>,
     pub wallet: Option<&'a PrivateKeySigner>,
+    pub dex: Option<String>,
 }
 
 #[derive(Debug)]
 pub struct MarketCloseParams<'a> {
     pub asset: &'a str,
+    pub dex: Option<String>,
     pub sz: Option<f64>,
     pub px: Option<f64>,
     pub slippage: Option<f64>,

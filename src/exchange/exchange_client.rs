@@ -106,6 +106,7 @@ impl ExchangeClient {
         base_url: Option<BaseUrl>,
         meta: Option<Meta>,
         vault_address: Option<Address>,
+        dex: Option<String>,
     ) -> Result<ExchangeClient> {
         let client = client.unwrap_or_default();
         let base_url = base_url.unwrap_or(BaseUrl::Mainnet);
@@ -114,7 +115,7 @@ impl ExchangeClient {
         let meta = if let Some(meta) = meta {
             meta
         } else {
-            info.meta().await?
+            info.meta(dex).await?
         };
 
         let mut coin_to_asset = HashMap::new();
@@ -316,7 +317,7 @@ impl ExchangeClient {
     ) -> Result<ExchangeResponseStatus> {
         let slippage = params.slippage.unwrap_or(0.05); // Default 5% slippage
         let (px, sz_decimals) = self
-            .calculate_slippage_price(params.asset, params.is_buy, slippage, params.px)
+            .calculate_slippage_price(params.asset, params.is_buy, slippage, params.px, params.dex)
             .await?;
 
         let order = ClientOrderRequest {
@@ -341,7 +342,7 @@ impl ExchangeClient {
     ) -> Result<ExchangeResponseStatus> {
         let slippage = params.slippage.unwrap_or(0.05); // Default 5% slippage
         let (px, sz_decimals) = self
-            .calculate_slippage_price(params.asset, params.is_buy, slippage, params.px)
+            .calculate_slippage_price(params.asset, params.is_buy, slippage, params.px, params.dex)
             .await?;
 
         let order = ClientOrderRequest {
@@ -372,7 +373,9 @@ impl ExchangeClient {
             _ => return Err(Error::GenericRequest("Invalid base URL".to_string())),
         };
         let info_client = InfoClient::new(None, Some(base_url)).await?;
-        let user_state = info_client.user_state(wallet.address()).await?;
+        let user_state = info_client
+            .user_state(wallet.address(), params.dex.clone())
+            .await?;
 
         let position = user_state
             .asset_positions
@@ -387,7 +390,13 @@ impl ExchangeClient {
             .map_err(|_| Error::FloatStringParse)?;
 
         let (px, sz_decimals) = self
-            .calculate_slippage_price(params.asset, szi < 0.0, slippage, params.px)
+            .calculate_slippage_price(
+                params.asset,
+                szi < 0.0,
+                slippage,
+                params.px,
+                params.dex.clone(),
+            )
             .await?;
 
         let sz = round_to_decimals(params.sz.unwrap_or_else(|| szi.abs()), sz_decimals);
@@ -413,6 +422,7 @@ impl ExchangeClient {
         is_buy: bool,
         slippage: f64,
         px: Option<f64>,
+        dex: Option<String>,
     ) -> Result<(f64, u32)> {
         let base_url = match self.http_client.base_url.as_str() {
             "https://api.hyperliquid.xyz" => BaseUrl::Mainnet,
@@ -420,7 +430,7 @@ impl ExchangeClient {
             _ => return Err(Error::GenericRequest("Invalid base URL".to_string())),
         };
         let info_client = InfoClient::new(None, Some(base_url)).await?;
-        let meta = info_client.meta().await?;
+        let meta = info_client.meta(dex).await?;
 
         let asset_meta = meta
             .universe

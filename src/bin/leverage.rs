@@ -13,9 +13,10 @@ async fn main() {
             .unwrap();
 
     let address = wallet.address();
-    let exchange_client = ExchangeClient::new(None, wallet, Some(BaseUrl::Testnet), None, None)
-        .await
-        .unwrap();
+    let exchange_client =
+        ExchangeClient::new(None, wallet, Some(BaseUrl::Testnet), None, None, None)
+            .await
+            .unwrap();
     let info_client = InfoClient::new(None, Some(BaseUrl::Testnet)).await.unwrap();
 
     let response = exchange_client
@@ -31,6 +32,6 @@ async fn main() {
 
     info!("Update isolated margin response: {response:?}");
 
-    let user_state = info_client.user_state(address).await.unwrap();
+    let user_state = info_client.user_state(address, None).await.unwrap();
     info!("User state: {user_state:?}");
 }
