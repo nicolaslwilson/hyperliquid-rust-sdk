@@ -125,6 +125,7 @@ impl ExchangeClient {
                 .iter()
                 .position(|d| &d.name == dex.as_ref().unwrap())
                 .ok_or(Error::GenericRequest("DEX not found".to_string()))? as u32
+                + 1
         } else {
             0
         };
