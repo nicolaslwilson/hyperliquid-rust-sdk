@@ -115,12 +115,29 @@ impl ExchangeClient {
         let meta = if let Some(meta) = meta {
             meta
         } else {
-            info.meta(dex).await?
+            info.meta(dex.clone()).await?
+        };
+
+        let perp_dex_index: u32 = if dex.is_some() {
+            info.perp_dexs()
+                .await?
+                .perp_dexs()
+                .iter()
+                .position(|d| &d.name == dex.as_ref().unwrap())
+                .ok_or(Error::GenericRequest("DEX not found".to_string()))? as u32
+        } else {
+            0
+        };
+
+        let init_asset_index: u32 = if dex.is_some() {
+            100000 + perp_dex_index * 10000
+        } else {
+            0
         };
 
         let mut coin_to_asset = HashMap::new();
         for (asset_ind, asset) in meta.universe.iter().enumerate() {
-            coin_to_asset.insert(asset.name.clone(), asset_ind as u32);
+            coin_to_asset.insert(asset.name.clone(), asset_ind as u32 + init_asset_index);
         }
 
         coin_to_asset = info

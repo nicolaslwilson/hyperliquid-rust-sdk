@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use alloy::primitives::Address;
+use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedSender;
@@ -11,7 +12,7 @@ use crate::{
         L2SnapshotResponse, OpenOrdersResponse, OrderInfo, RecentTradesResponse, UserFillsResponse,
         UserStateResponse,
     },
-    meta::{AssetContext, Meta, SpotMeta, SpotMetaAndAssetCtxs},
+    meta::{AssetContext, Meta, PerpDexsResponse, SpotMeta, SpotMetaAndAssetCtxs},
     prelude::*,
     req::HttpClient,
     ws::{Subscription, WsManager},
@@ -183,7 +184,7 @@ impl InfoClient {
         let data =
             serde_json::to_string(&info_request).map_err(|e| Error::JsonParse(e.to_string()))?;
 
-        println!("Sending info request: {data}");
+        debug!("Sending info request: {data:?}");
 
         let return_data = self.http_client.post("/info", data).await?;
         serde_json::from_str(&return_data).map_err(|e| Error::JsonParse(e.to_string()))
@@ -224,6 +225,11 @@ impl InfoClient {
 
     pub async fn meta(&self, dex: Option<String>) -> Result<Meta> {
         let input = InfoRequest::Meta { dex };
+        self.send_info_request(input).await
+    }
+
+    pub async fn perp_dexs(&self) -> Result<PerpDexsResponse> {
+        let input = InfoRequest::PerpDexs;
         self.send_info_request(input).await
     }
 

@@ -9,6 +9,48 @@ pub struct Meta {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PerpDexInfo {
+    pub name: String,
+    pub full_name: String,
+    pub deployer: String,
+    pub oracle_updater: Option<String>,
+    pub fee_recipient: Option<String>,
+    pub asset_to_streaming_oi_cap: Vec<[String; 2]>,
+}
+
+/// Response from perpDexs endpoint
+/// API returns [null, {...}, {...}, ...] format
+/// First element is null, followed by PerpDexInfo objects
+#[derive(Debug)]
+pub struct PerpDexsResponse(pub Vec<PerpDexInfo>);
+
+impl<'de> serde::Deserialize<'de> for PerpDexsResponse {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let values: Vec<serde_json::Value> = Vec::deserialize(deserializer)?;
+
+        // Skip the first element (null) and deserialize the rest
+        let perp_dexs: Result<Vec<PerpDexInfo>, _> = values
+            .into_iter()
+            .skip(1)
+            .map(|v| serde_json::from_value(v).map_err(serde::de::Error::custom))
+            .collect();
+
+        Ok(PerpDexsResponse(perp_dexs?))
+    }
+}
+
+impl PerpDexsResponse {
+    /// Get all perp dex info as a slice
+    pub fn perp_dexs(&self) -> &[PerpDexInfo] {
+        &self.0
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct SpotMeta {
     pub universe: Vec<SpotAssetMeta>,
     pub tokens: Vec<TokenInfo>,
