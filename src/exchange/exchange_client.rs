@@ -118,7 +118,7 @@ impl ExchangeClient {
             info.meta(dex.clone()).await?
         };
 
-        let perp_dex_index: u32 = if dex.is_some() {
+        let perp_dex_index: u32 = if dex.is_some() && dex.as_ref().unwrap() != "" {
             info.perp_dexs()
                 .await?
                 .perp_dexs()
