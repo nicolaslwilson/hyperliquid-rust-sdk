@@ -130,7 +130,7 @@ impl ExchangeClient {
             0
         };
 
-        let init_asset_index: u32 = if dex.is_some() {
+        let init_asset_index: u32 = if dex.is_some() && dex.as_ref().unwrap() != "" {
             100000 + perp_dex_index * 10000
         } else {
             0
